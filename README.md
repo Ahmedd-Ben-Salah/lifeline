@@ -8,6 +8,7 @@ Agents that forecast danger on Mars and move air, water and food between colonie
   <a href="https://ahmedd-ben-salah.github.io/lifeline/deck/"><b>Pitch deck</b></a> ·
   <a href="https://ahmedd-ben-salah.github.io/lifeline/explainer/explainer.html">Technical explainer</a> ·
   <a href="docs/Lifeline_Explainer.pdf">Explainer (PDF)</a>
+  <a href="https://youtu.be/O_zGMuz0ozQ">Demo Video</a>.
 </p>
 
 <p align="center"><i>IEEE Lumen 2.0 · Beyond 2030 challenge</i></p>
