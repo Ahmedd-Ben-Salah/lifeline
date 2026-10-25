@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/architecture.svg" alt="Lifeline system design" width="100%">
+  <img src="docs/system-design/architecture.png" alt="Lifeline system architecture" width="100%">
 </p>
 
 <h1 align="center">Lifeline</h1>
@@ -132,15 +132,19 @@ Earth and Mars at their true positions for the scenario date, the cargo fleet on
 
 ## System design
 
-```
-Browser (Next.js pages, three.js)  ──poll /api/state (1.5 s)──►  API route handlers (app/api/**)
-                                                                    │  signed JWT cookie, role checks, audit
-                                                                    ▼
-                                         World store (one JSON document: Redis on Vercel, file locally)
-                                           │  tick(now): scheduled events are applied on every read
-                                           ▼
-             Engine (lib/engine, pure TypeScript, deterministic)  ◄── tools ──  Agents (lib/agents, LLM tool use)
-```
+### 1 · Architecture: agents on top, real tools underneath
+
+<img src="docs/system-design/architecture.png" alt="Layered architecture" width="100%">
+
+### 2 · Sequence: from a dust signal to a rocket on its way
+
+<img src="docs/system-design/sequence.png" alt="Storm response sequence diagram" width="100%">
+
+### 3 · Decision pipeline
+
+<img src="docs/system-design/pipeline.png" alt="Decision pipeline" width="100%">
+
+Diagram sources (Mermaid): [`docs/system-design/`](docs/system-design/).
 
 - **One request, end to end**: `proxy.ts` guards pages. Every API route goes through `route()` in `lib/server/http.ts`, which verifies the session, checks the role permission and maps errors to status codes. Writes go through `mutate()` in `lib/server/store.ts`: lock, load, apply due events, change, save.
 - **Time without a background worker**: future events (the reply timeout, a rover failure, a light-delayed message) are stored in `world.schedule` with a timestamp. `tick(now)` applies the ones that are due on every read, so the app runs on serverless with no cron or queue.
@@ -241,7 +245,7 @@ lib/auth/            sessions, users, permission matrix
 public/textures/     Mars, Earth, Phobos and Deimos textures
 scripts/             texture and elevation grid builder
 tests/               engine tests
-docs/                architecture banner, deck, explainer, deploy and agent docs
+docs/                system design diagrams, screenshots, deck, explainer, deploy and agent docs
 ```
 
 ## Real vs simulated

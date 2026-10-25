@@ -1,0 +1,16 @@
+flowchart LR
+  A["Colony sensors<br/>4 colonies, simulated"] --> B["World state<br/>stocks · power · dust τ"]
+  B --> C["Storm forecast<br/>Outlook · Watch · Track"]
+  C --> D["Impact per colony<br/>resource model + BVAD"]
+  D -->|"no shortfall"| M["Monitor<br/>status colours"]
+  D -->|"shortfall"| N["WARN + NEED<br/>to the colony at risk"]
+  N -->|"reply"| O["Neighbour OFFERs<br/>keep own 90-day reserve"]
+  N -->|"timeout 20 min"| T["Act alone<br/>reason logged"]
+  T --> O
+  O --> R["Rover plan<br/>A* routes, re-plan on failure"]
+  R -->|"gap covered"| Z["Signed messages<br/>+ audit log"]
+  R -->|"gap remains"| X["Earth order draft<br/>gap + season outlook"]
+  X --> Y["Window · rockets<br/>trajectory · landing zone"]
+  Y --> H{"2 human GOs<br/>after light delay?"}
+  H -->|"GO"| Z
+  H -->|"changes"| X

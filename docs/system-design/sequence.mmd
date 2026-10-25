@@ -1,0 +1,49 @@
+sequenceDiagram
+  autonumber
+  participant OP as Operator (Jezero)
+  participant W as Weather agent
+  participant J as Jezero agent
+  participant AR as Arcadia agent
+  participant U as Utopia agent
+  participant L as Logistics agent
+  participant ES as Earth supply agent
+  participant EN as Engine tools
+  participant EC as Earth control
+  participant ST as World store + audit
+
+  OP->>W: Dust rising over Hellas (τ 0.9 → 2.4 in 3 sols)
+  par Three forecast horizons
+    W->>W: Outlook: dust-season risk per colony
+  and
+    W->>W: Watch: disturbances likely to grow
+  and
+    W->>EN: Track: storm_ensemble (300 seeded runs)
+    EN-->>W: Cone · 78% to Arcadia · arrives in 8–14 sols · solar −64 to −75%
+  end
+  W->>J: WARN storm S-17 toward Arcadia
+  J->>EN: resource_forecast (Arcadia, 60 sols)
+  EN-->>J: Short 4,240 kg water · 1,370 kg O₂ · 19 days of air left
+  J->>AR: NEED
+  opt No reply within 20 min (antenna down)
+    J->>J: TIMEOUT · act alone under policy · reason logged
+  end
+  J->>U: NEED broadcast
+  U->>EN: spare capacity (keep 90 days for itself)
+  U-->>J: OFFER 1,550 kg water + 540 kg O₂ on rover 7
+  J->>U: ACCEPT (policy: act and notify)
+  J->>L: Dispatch delivery
+  L->>EN: rover_route · A* on MOLA terrain
+  alt Rover 3 breaks down on the road
+    L->>EN: Re-plan via rover 3 to recover its 900 kg
+    EN-->>L: 2,722 km · 7.9 sols · arrives before the storm (8.1)
+  end
+  J->>ES: ORDER remaining gap + next-season outlook
+  ES->>EN: launch_window · cargo packer · landing scorer
+  EN-->>ES: Departs 1 Aug 2052 · 193-day flight · 261 t in 3 rockets · Arcadia-south
+  ES->>OP: Earth order needs 2 human GOs
+  OP->>EC: GO (travels 6 min 26 s at light speed)
+  Note over OP,EC: Mars approvals only count once they reach Earth
+  EC->>ES: GO
+  ES-->>EC: Order SENT
+  ES->>ST: Signed messages + audit entries
+  ST-->>OP: Every page recomputed from the world state

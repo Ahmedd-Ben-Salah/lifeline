@@ -1,0 +1,74 @@
+flowchart TB
+  subgraph P["People"]
+    direction LR
+    P1["Colony operators<br/>Jezero · Arcadia · Utopia · Valles"]
+    P2["Earth mission control<br/>second GO on Earth orders,<br/>after the light delay"]
+    P3["Launch & cargo suppliers<br/>confirm manufacturing"]
+    P4["Viewers<br/>read-only"]
+  end
+
+  subgraph F["1 · Frontend — Next.js 16 + React 19 (App Router)"]
+    direction LR
+    F1["Overview<br/>days of air / water / food"]
+    F2["Forecasts<br/>storm cone on 3D Mars"]
+    F3["Comms console<br/>agent messages + light delay"]
+    F4["Logistics<br/>rover routes on terrain"]
+    F5["Resupply<br/>porkchop · orbit · rockets"]
+    F6["Space view<br/>three.js solar system"]
+    F7["Automations · Rules<br/>agent builder · autonomy policy"]
+  end
+
+  subgraph A["2 · API — Next.js route handlers"]
+    direction LR
+    A1["proxy.ts + JWT cookie<br/>jose · bcrypt"]
+    A2["Role matrix<br/>5 roles, checked on every call"]
+    A3["Actions<br/>approve · ask · transfer · policy · demo"]
+    A4["Views<br/>one payload per page"]
+    A5[("Audit log")]
+  end
+
+  subgraph G["4 · Agent layer — the engine decides, the LLM only explains"]
+    direction LR
+    G1["Weather agent<br/>fuses all colonies"]
+    G2["Colony agents ×4<br/>need · offer · act alone"]
+    G3["Logistics agent<br/>rover transfers"]
+    G4["Earth supply agent<br/>gap → Earth order"]
+    G5["Custom agents<br/>WHEN / THEN rules"]
+    G6["LLM with tool use<br/>scripted fallback, works offline"]
+    G7["Guardrails<br/>number grounding · timeouts · 2 human GOs"]
+  end
+
+  subgraph E["5 · Engine — pure TypeScript, seeded, deterministic"]
+    direction LR
+    E1["Ephemeris<br/>positions · light delay · Ls"]
+    E2["Lambert solver<br/>windows · porkchop"]
+    E3["Storm ensemble<br/>300 runs → cone"]
+    E4["Resource model<br/>BVAD · Monte-Carlo"]
+    E5["Rover router<br/>A* on MOLA grid"]
+    E6["Cargo packer<br/>life-critical first"]
+    E7["Landing scorer<br/>slope · quakes · dust"]
+  end
+
+  subgraph S["3 · State"]
+    direction LR
+    S1[("World store<br/>one JSON document<br/>Upstash Redis · local file")]
+    S2["Schedule + tick(now)<br/>due events applied on every read"]
+    S3["Mission clock<br/>sol · season · light delay"]
+  end
+
+  subgraph D["6 · Data — real where physical, simulated where 2050"]
+    direction LR
+    D1[("JPL planetary<br/>elements")]
+    D2[("NASA MOLA<br/>elevation 1°")]
+    D3[("NASA BVAD<br/>crew needs")]
+    D4[("Opportunity 2018<br/>power calibration")]
+    D5[("Mars global<br/>storm record")]
+    D6[("2050 colonies<br/>simulated, labelled")]
+  end
+
+  P2 --> F3
+  F3 <-->|"poll /api/state every 1.5 s · REST"| A3
+  A3 -->|"mutate(): lock · load · tick · save"| S2
+  S2 -->|"world state + due events"| G4
+  G4 -->|"tools: every number comes from here"| E4
+  E4 -.->|"reads real data"| D3
