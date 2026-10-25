@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lifeline — How we built it</title>
+<style>
+@font-face{font-family:"Geist";src:url("../../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2") format("woff2");font-weight:100 900}
+@font-face{font-family:"Geist Mono";src:url("../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2") format("woff2");font-weight:100 900}
+@page { size: A4; margin: 16mm 15mm 18mm; }
+:root{--ink:#0E1116;--ink2:#3A414B;--ink3:#5B6370;--ink4:#8A919C;--line:#E6E8EC;--sig:#2F6FEB;--sunk:#F1F3F5;--crit:#B91C1C;--ok:#157A42;--warn:#9A4A07}
+*{box-sizing:border-box}
+body{font:400 10.4pt/1.5 "Geist","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);margin:0}
+h1{font-size:30pt;letter-spacing:-.02em;margin:0 0 6px}
+h2{font-size:16pt;margin:26px 0 8px;letter-spacing:-.01em;break-after:avoid}
+h3{font-size:11.5pt;margin:16px 0 4px;break-after:avoid}
+p{margin:6px 0}
+.mono,code{font-family:"Geist Mono",ui-monospace,Menlo,monospace;font-size:9.2pt}
+code{background:var(--sunk);border-radius:4px;padding:0 4px}
+.eyebrow{font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);font-weight:600}
+.cover{height:257mm;display:flex;flex-direction:column;justify-content:space-between;break-after:page}
+.cover .hero{border-radius:16px;overflow:hidden;height:120mm;background:#05070B;position:relative}
+.cover .hero img{width:100%;height:100%;object-fit:cover}
+.lead{font-size:13pt;color:var(--ink2);max-width:150mm}
+.box{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0;break-inside:avoid}
+.box.blue{background:#EEF4FF;border-color:#D6E3FC}
+.box.warn{background:#FEF3E2;border-color:#F5DDB5}
+table{width:100%;border-collapse:collapse;font-size:9.4pt;margin:8px 0;break-inside:auto}
+th{text-align:left;font-weight:600;color:var(--ink3);border-bottom:1px solid var(--line);padding:6px 6px}
+td{border-bottom:1px solid #EEF0F3;padding:6px 6px;vertical-align:top}
+tr{break-inside:avoid}
+.shot{width:100%;border:1px solid var(--line);border-radius:10px;margin:8px 0;break-inside:avoid}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tag{display:inline-block;font:600 8pt "Geist Mono",monospace;border-radius:4px;padding:1px 5px;background:var(--sunk)}
+.qa dt{font-weight:600;margin-top:10px;break-after:avoid}
+.qa dd{margin:2px 0 0 0;color:var(--ink2)}
+.page-break{break-before:page}
+.num{font-family:"Geist Mono",monospace}
+ol,ul{margin:4px 0 4px 18px;padding:0}
+li{margin:2px 0}
+.small{font-size:8.8pt;color:var(--ink3)}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div>
+    <div class="eyebrow">IEEE Lumen 2.0 · Beyond 2030 · Pitch &amp; Q&amp;A guide</div>
+    <h1>Lifeline</h1>
+    <p class="lead">The supply chain between worlds. AI agents forecast danger on Mars and move air, water and food between colonies — and from Earth — before anyone runs out.</p>
+  </div>
+  <div class="hero"><img src="img/overview.png" alt=""></div>
+  <div class="small">This document explains, in simple words, what we built, how every number is computed, how the AI agents work, and how to answer the jury's questions. Everything here matches the code in the repository.</div>
+</section>
+
+<h2>1. The pitch in one minute</h2>
+<p><b>Hook.</b> In June 2018 a global dust storm cut the Opportunity rover's daily energy from about 645 Wh to 22 Wh in a week. It never woke up. Now imagine four cities on Mars.</p>
+<p><b>Problem.</b> Rockets can only leave Earth for Mars about every <b>26 months</b> (the synodic period, 780 days). The trip takes 6–9 months. Messages take 3 to 22 minutes one way. A colony must order what it needs up to <b>two years before</b> it needs it — the longest supply chain humanity will ever run. Today nothing manages it: each colony watches itself, Earth reacts too late, and when a rover breaks nothing replans delivery.</p>
+<p><b>Solution — three jobs.</b> (1) <b>Forecast</b> storms at three horizons, like a weather service (Outlook ~18 months, Watch weeks, Track days with a hurricane-style cone). (2) <b>Coordinate</b>: one AI agent per colony plus weather, logistics and Earth-supply agents talk with a signed protocol (WARN → NEED → OFFER → ACCEPT, TIMEOUT → act alone, ORDER). (3) <b>Deliver</b>: rover convoys on real Mars terrain, rerouted on failure; Earth resupply timed to the launch window, packed and landed.</p>
+<p><b>Golden rule.</b> The math decides, the AI explains. Every number on screen comes from a deterministic engine. Agents only call tools and quote their results. Big actions need a human “Go”.</p>
+<p><b>Close.</b> “On Earth, a late delivery is annoying. On Mars, it is fatal. Lifeline makes sure help is already on its way.”</p>
+
+<h2>2. The scenario we demo</h2>
+<table>
+<tr><th>Item</th><th>Value</th><th>Where it comes from</th></tr>
+<tr><td>Date</td><td class="num">12 Nov 2050, 06:00 UTC</td><td>Chosen so Mars is in peak dust season. Shown as mission <b>sol 1,284</b>.</td></tr>
+<tr><td>Mars season</td><td class="num">Ls 292°, Mars Year 51</td><td>Computed from Mars' orbit (<code>marsLs</code>). Dust season = Ls 160–340°, perihelion Ls 251°.</td></tr>
+<tr><td>Earth ⟷ Mars light time</td><td class="num">6 min 26 s</td><td>Real distance between the planets that day ÷ speed of light.</td></tr>
+<tr><td>Next launch window</td><td class="num">1 Aug 2052 · C3 14.8 km²/s² · 193-day flight</td><td>Lambert solver scan (lowest launch energy). 628 days away — that is the 26-month problem.</td></tr>
+<tr><td>Colonies</td><td>Jezero 64 people · Arcadia 42 · Utopia 36 · Valles 28</td><td>Real coordinates; stocks are simulated.</td></tr>
+<tr><td>Storm S-17</td><td class="num">p 0.78 to reach Arcadia, sol +8 to +14</td><td>233 of 300 seeded ensemble runs (seed 4412).</td></tr>
+<tr><td>Critical colony</td><td>Arcadia, oxygen 19 days</td><td>670 kg ÷ 35.3 kg per sol (42 people × 0.84 kg, NASA BVAD).</td></tr>
+</table>
+
+<h3>The story the agents play</h3>
+<ol>
+<li><span class="tag">WARN</span> weather-agent: S-17 formed over Hellas; 233/300 runs reach Arcadia between sol +8 and +14; solar loss up to ~75% for ~41 sols.</li>
+<li><span class="tag">NEED</span> jezero-agent → arcadia-agent: to keep 30 days of reserve Arcadia needs ~4,240 kg water and ~1,370 kg O₂ (resource forecast, 300 runs).</li>
+<li><span class="tag">TIMEOUT</span> Arcadia's antenna is down. No reply in 20 minutes (policy) → Jezero may act alone for life-critical actions.</li>
+<li><span class="tag">OFFER</span> Utopia offers 1,550 kg water + 540 kg O₂ — only what keeps its own 90-day reserve — on rover r-7.</li>
+<li><span class="tag">ACCEPT</span> Jezero accepts (policy: auto + notify humans, up to 2 t). Transfer TR-0921 is created.</li>
+<li><span class="tag">FAULT</span> Rover r-3 (carrying 900 kg water to Arcadia) breaks down on the direct route. The router sends r-7 via r-3 to recover its cargo: +0.3 sols, ETA 7.9 sols — just before the storm's earliest arrival (8.1 sols). r-7 now carries 2.99 t of its 3 t limit.</li>
+<li><span class="tag">ORDER</span> earth-supply-agent drafts ORD-0312: 3 ships, 261 t, for the 2052 window, landing at arcadia-south (score 0.84). Needs two human approvals.</li>
+<li>Approvals travel to Earth with the real light delay (scaled for the stage). When two “Go”s have reached Earth, the order is SENT.</li>
+</ol>
+
+<div class="page-break"></div>
+<h2>3. How the app is built</h2>
+<div class="box">
+<b>Browser</b> (Next.js 16 pages, React 19, three.js) → polls <code>/api/state</code> every 1.5 s → when the world version changes, each page refetches its own payload (<code>/api/overview</code>, <code>/api/forecasts</code>, …).<br>
+<b>API routes</b> check the login cookie (signed JWT) and the role, then read or change the <b>world</b>: one JSON document saved in Redis (Upstash) on Vercel, or a local file in development.<br>
+<b>Engine</b> (<code>lib/engine</code>): pure TypeScript functions, deterministic, unit-tested. Every number on screen is recomputed from the world by the engine at request time.<br>
+<b>Agents</b> (<code>lib/agents</code>): Claude (Anthropic Messages API with tool use) writes the agent messages and answers questions, calling engine functions as tools. If Claude is off, slow, or quotes a number not in the tool results, a scripted template with the same numbers is used.
+</div>
+<h3>Why it works on serverless (no background worker)</h3>
+<p>Agent events (a timeout after 20 minutes, a message arriving after the light delay) are stored as a <b>schedule</b> in the world. On every read, <code>tick(now)</code> applies the events whose time has come. Light-delayed messages simply carry a <code>deliverAt</code> time: the Earth side doesn't see a Mars message until it “arrives”.</p>
+<h3>Security &amp; roles</h3>
+<p>Passwords are bcrypt hashes; sessions are HS256-signed JWTs in httpOnly cookies; the route proxy redirects signed-out users to /login. Every mutating API checks the role on the server (a VIEWER approving gets HTTP 403). Every agent message carries an HMAC-SHA256 signature of its body and payload; every human or demo action is written to an audit log.</p>
+<table>
+<tr><th>Action</th><th>Operator</th><th>Earth</th><th>Supplier</th><th>Viewer</th><th>Admin</th></tr>
+<tr><td>Ask agents</td><td>✓</td><td>✓</td><td></td><td></td><td>✓</td></tr>
+<tr><td>Accept offers, create transfers</td><td>✓</td><td></td><td></td><td></td><td>✓</td></tr>
+<tr><td>Approve Earth orders</td><td>✓</td><td>✓</td><td></td><td></td><td>✓</td></tr>
+<tr><td>Confirm manufacturing</td><td></td><td>✓</td><td>✓</td><td></td><td>✓</td></tr>
+<tr><td>Edit policies / automations, demo panel</td><td></td><td></td><td></td><td></td><td>✓</td></tr>
+</table>
+
+<h2>4. The engine — every number explained</h2>
+<h3>4.1 Where the planets are — <code>ephemeris.ts</code></h3>
+<p>We use NASA JPL's “Approximate Positions of the Planets” (Keplerian elements + rates, valid 1800–2050). For a date we compute the mean anomaly, solve Kepler's equation <i>M = E − e·sin E</i> with Newton's method, and rotate into the ecliptic frame. Accuracy: about one arc-minute — thousands of km, which is negligible for windows and delays.</p>
+<ul>
+<li><b>Light delay</b> = |Earth − Mars| ÷ 299,792.458 km/s. Test: 31 Jul 2018 close approach = 57.6 million km ✓.</li>
+<li><b>Mars season Ls</b> = Mars' heliocentric longitude − 85.06°. Test: Ls ≈ 0 on 26 Dec 2022 (MY 37 equinox) ✓.</li>
+<li><b>Sols and local time</b>: Mars Sol Date (Allison &amp; McEwen) and local mean solar time = MTC + longitude/15. Message times in the app are LMST at Jezero.</li>
+<li><b>Day/night on Mars</b>: the sub-solar point latitude = asin(sin 25.19° · sin Ls), longitude where local time is noon. The 3D globes light Mars from that real direction.</li>
+<li><b>Earth rotation</b>: Greenwich sidereal time; Mars rotation: IAU prime meridian W = 176.630° + 350.89198226°/day.</li>
+</ul>
+<h3>4.2 Launch windows — <code>lambert.ts</code>, <code>windows.ts</code></h3>
+<p>Lambert's problem: “which orbit takes me from Earth's position on the launch day to Mars' position on the arrival day in exactly that time?” We solve it with the universal-variable method (Curtis, Algorithm 5.2) using bisection (it never diverges). The departure speed relative to Earth gives <b>C3 = v∞²</b>, the launch energy. The <b>porkchop plot</b> is a grid of 120 departure dates × 72 flight times (8,640 Lambert solutions, ~0.2 s). The <b>window</b> is the date with the lowest C3 found by scanning ~26 months. Test: the real 2026 window comes out 30 Oct 2026 with C3 9.1 km²/s² — the range mission designers publish ✓. The transfer path is drawn by integrating the orbit (Runge–Kutta) from the Lambert departure velocity.</p>
+<h3>4.3 The storm forecast — <code>storm.ts</code></h3>
+<p>An <b>ensemble</b>, like hurricane forecasting: 300 copies of the storm, each with slightly different drift direction (±19°), speed (log-normal around 680 km/sol), lifetime (~40 sols) and growth. Each copy moves along a great circle in 6-hour steps; a colony is “reached” when it falls inside the dusty radius. Results: probability per colony (runs that reach it ÷ 300), arrival histogram, the cone (directions containing 67% and 90% of the runs), optical depth τ at the colony. All random numbers come from a seeded generator (mulberry32, seed 4412): <b>same seed → identical forecast</b> (tested).</p>
+<p><b>Solar loss</b> = 1 − e<sup>−0.313(τ−0.5)</sup>, calibrated on Opportunity in June 2018 (τ ≈ 10.8 → 645 Wh to 22 Wh, −97%).</p>
+<h3>4.4 How long colonies last — <code>resources.ts</code></h3>
+<p>Crew needs per person per sol from NASA's BVAD: O₂ 0.84 kg, water 6.5 kg (2.5 drink/food + 4.0 hygiene), food 1.8 kg, 98% water recovery. <b>Reserve days</b> = stock ÷ daily use. The 60-sol forecast integrates the stock day by day for each of the 300 storm runs: power = nuclear + solar × solar factor(τ); a power shortfall throttles production with the life-critical order (O₂ protected first, then water, then food lighting). Rover deliveries are added on their arrival sol. We show the median and the 10–90% band, plus a “no action” line.</p>
+<h3>4.5 Rover routes — <code>router.ts</code></h3>
+<p>A* search on a 1°×1° grid of <b>real Mars elevation (MOLA)</b>. Cost = distance × (1 + slope penalty) + storm-cone penalty (cells inside the forecast cone at the time the rover would be there) + blocked zones. Speed 20 km/h, 18 h of driving per sol = 360 km/sol (autonomous nuclear rovers). The path is smoothed and its elevation profile is shown on the Logistics page. Test: Olympus Mons &gt; 12 km, Hellas &lt; −5 km ✓.</p>
+<h3>4.6 Earth order — <code>packer.ts</code>, <code>landing.ts</code></h3>
+<p>Demand = each colony's structural deficit (use − production) × 780 days (until the following window) × 1.15 dust-season margin + spares + 2 replacement rovers. The packer splits it into tanks/pallets and fills 3 ships of 100 t (Starship-class assumption), life-critical cargo first and spread across ships (losing one ship never loses all the oxygen). Landing score = 0.35·(1 − slope/10°) + 0.25·(1 − quake risk) + 0.25·(1 − distance/2500 km) + 0.15·(1 − dust τ/5).</p>
+<h3>4.7 Outlook and Watch — <code>season.ts</code></h3>
+<p>Outlook uses climatology: regional storms peak in three seasons each Mars year (A ~Ls 225°, B ~Ls 275°, C ~Ls 325°; Kass et al. 2016) and planet-encircling storms happened in 3 of 14 recorded Mars years (2001, 2007, 2018). Watch is a transparent heuristic (logistic on dust trend, area and season). We say clearly in the Q&amp;A that these two are heuristics; the Track ensemble is the simulation.</p>
+
+<div class="page-break"></div>
+<h2>5. The AI agents</h2>
+<div class="box blue"><b>Agents reason and talk; tools calculate.</b> Claude never invents a number: it calls tools (engine functions) and may only quote their results. Code enforces it.</div>
+<table>
+<tr><th>Guardrail</th><th>How it works in the code</th></tr>
+<tr><td>Number grounding</td><td>Every number in Claude's reply must appear in the tool results of that conversation (<code>numbersGrounded</code>). If not → the reply is replaced by the scripted wording of the same facts.</td></tr>
+<tr><td>Timeouts</td><td>9 s per protocol message, 28 s per question → scripted fallback. The demo never waits on the network.</td></tr>
+<tr><td>Human Go</td><td>Earth orders need 2 approvals from 2 different people; approvals from Mars must physically reach Earth (light delay) before the order is SENT.</td></tr>
+<tr><td>Policy autonomy</td><td>Each action (warn, accept offer, dispatch rover, change rations, Earth order) is AUTO / NOTIFY / GO per comms state (normal, delayed, blackout). Editable on the Policies page.</td></tr>
+<tr><td>Signatures &amp; audit</td><td>HMAC-SHA256 on every message; audit log for every human/demo action.</td></tr>
+<tr><td>Refusal fallback</td><td>Server-side fallback model enabled on the Claude API call; on any error the scripted agent answers.</td></tr>
+</table>
+<p><b>Model:</b> Claude Opus 5.5 (<code>claude-opus-5-5</code>) at low effort for short protocol messages and questions; switchable to Sonnet 5.5 with one environment variable. Prompts, tools and roles are listed in <code>docs/AGENT_PROMPTS.md</code>.</p>
+<p><b>Live replay</b> (“Inject storm”): the engine computes the facts of all eight steps first; Claude writes all eight messages in parallel (≈ 3–6 s); they are then released one by one in real time (reply timeout scaled to ~24 s, Earth delay scaled to ~39 s). Each message shows whether Claude or the template wrote it.</p>
+<p><b>Ask the agents:</b> a real tool-use loop — e.g. “What if the storm lasts 60 sols?” makes the agent call <code>resource_forecast(colony: arcadia, resource: O2, storm_duration_sols: 60)</code> and answer with the run-out sol; tool chips under the answer show exactly which tools ran.</p>
+
+<h2>6. The visuals</h2>
+<ul>
+<li><b>Real textures</b>: Mars colour from the Viking mosaic; relief from MOLA elevation turned into a normal map and a shaded-relief map (our script <code>scripts/build_textures.py</code>); Earth from NASA Blue Marble (day) and Black Marble (night lights), ocean mask for sun glint, clouds; star background from the NASA Tycho star map; Phobos, Deimos from NASA 3D Resources.</li>
+<li><b>True lighting</b>: the Sun direction is computed for the sim date, so day and night on both planets are where they really are.</li>
+<li><b>Smoothness</b>: damped, frame-rate-independent zoom; inertial rotation; rendering pauses when off-screen; no allocations in the render loop; labels moved with CSS transforms only; logarithmic depth for close-ups.</li>
+<li><b>Maps</b>: Forecasts and Logistics draw the storm cone and routes over the real shaded-relief map in an equirectangular projection (0–360°E).</li>
+</ul>
+
+
+<div class="page-break"></div>
+<h2>6b. The product, screen by screen</h2>
+<p class="small">Screenshots of the running app (seeded scenario, signed in as Ayari).</p>
+<h3>Forecasts — storm S-17 cone on the real Mars terrain map</h3><img class="shot" src="img/forecasts.png">
+<div class="page-break"></div>
+<h3>Comms — the agents' protocol, tool chips, signatures, light-delay rings</h3><img class="shot" src="img/comms.png">
+<h3>Logistics — rover routes from A* on MOLA elevation</h3><img class="shot" src="img/logistics.png">
+<div class="page-break"></div>
+<h3>Resupply — launch window, porkchop from 8,640 Lambert solutions, packed ships, approvals</h3><img class="shot" src="img/resupply.png">
+<div class="page-break"></div>
+<h3>Colony detail — 60-sol Monte-Carlo forecast</h3><img class="shot" src="img/colony.png">
+<h3>Traffic 3D — real orbits, the fleet's Lambert trajectory</h3><img class="shot" src="img/traffic.png">
+
+<h2>7. What is real, what is simulated</h2>
+<div class="grid2">
+<div class="box"><b>Real</b><br>Planet positions (JPL), launch windows and C3 (Lambert), trajectories, light delay, Mars seasons and local time, true day/night, Earth and Mars rotation, Mars elevation (MOLA) for routing, colony coordinates, crew needs (BVAD), solar loss calibrated on Opportunity 2018, Phobos/Deimos periods, dust-season climatology.</div>
+<div class="box warn"><b>Simulated</b><br>The 2050 colonies' stocks and sensors, the rover fleet and its speed, cargo ship size (100 t), storm S-17 and its ensemble parameters, the Watch heuristic. Planets in 3D are enlarged so you can see them; positions are true.</div>
+</div>
+
+<div class="page-break"></div>
+<h2>8. Live demo script (≈ 2 minutes)</h2>
+<table>
+<tr><th>Time</th><th>Screen</th><th>Do</th><th>Say</th></tr>
+<tr><td>0:00</td><td>/login</td><td>Sign in as Ayari</td><td>“Mission control for four Mars colonies, 2050. That's the real Mars, lit by the real Sun for that date.”</td></tr>
+<tr><td>0:10</td><td>Overview</td><td>Point at KPIs</td><td>“Arcadia has 19 days of oxygen. A storm reaches it in 8–14 sols with 78% probability. One decision needs me.”</td></tr>
+<tr><td>0:20</td><td>Forecasts</td><td>Track tab, cone</td><td>“A hurricane forecast — on Mars. 300 simulation runs on the real terrain map.”</td></tr>
+<tr><td>0:45</td><td>Comms</td><td>Storm S-17 thread</td><td>“Arcadia is silent — after 20 minutes Jezero acts alone. Utopia offers only what keeps its own 90-day reserve. A rover breaks — the logistics agent reroutes and even recovers its cargo.”</td></tr>
+<tr><td>1:10</td><td>Comms</td><td>Ask “What if the storm lasts 60 sols?”</td><td>“The agent calls the engine — see the tool chips. It can't make numbers up.”</td></tr>
+<tr><td>1:25</td><td>Resupply</td><td>Approve</td><td>“Next window in 628 days. Three ships packed. My Go now travels to Earth at the speed of light.”</td></tr>
+<tr><td>1:45</td><td>Traffic 3D</td><td>Fleet → Mars → Arcadia</td><td>“Real orbits, the fleet on its trajectory, the storm on Mars.”</td></tr>
+<tr><td>2:00</td><td>—</td><td></td><td>“Help is already on its way before the danger arrives.”</td></tr>
+</table>
+<p class="small">Before going on stage: press D → Reset. Backup: set <code>AGENTS_MODE=scripted</code> if the Wi-Fi is bad (same messages, no API). Optional wow moment: press D → “Inject storm (live)” and let the jury watch the agents talk in real time.</p>
+
+<h2>9. Q&amp;A cheat sheet</h2>
+<dl class="qa">
+<dt>Can you really predict a storm 18 months ahead?</dt><dd>No one can predict a specific storm that far. We forecast the <i>season's risk</i> 18 months ahead (that's the lead time Earth needs for an order), detect forming storms weeks ahead (Watch), and track them days ahead with probabilities (Track).</dd>
+<dt>What if the AI hallucinates?</dt><dd>It can't change a number: the engine computes all of them. The code rejects any Claude reply containing a number that isn't in the tool results and uses a template instead. Big actions need two humans. Every message is signed and logged.</dd>
+<dt>Why not let the AI decide everything?</dt><dd>Life-critical decisions need accountability. Our policy page sets, per action and per communication state, whether agents act automatically, notify humans or need a Go. During a blackout, more is automatic — because waiting 40 minutes for Earth can kill.</dd>
+<dt>How do you know the launch window is right?</dt><dd>We solve Lambert's problem for every departure/arrival pair and pick the minimum launch energy. For 2026 we get 30 October with C3 ≈ 9 km²/s², matching published mission-design values. 21 unit tests check the engine against real references.</dd>
+<dt>How accurate are the planet positions?</dt><dd>JPL's approximate elements: about one arc-minute for Earth and Mars in 1800–2050 — a few thousand km, irrelevant for windows and delays. Our scenario date (2050) is at the edge of the validity range; for later dates we would switch to JPL DE ephemerides.</dd>
+<dt>Why 0.78?</dt><dd>233 of 300 ensemble runs bring the storm over Arcadia. Change the seed and you get a slightly different number; same seed always gives the same result so the demo is reproducible.</dd>
+<dt>Where does “19 days” come from?</dt><dd>670 kg of O₂ ÷ 35.3 kg per sol (42 people × 0.84 kg/person/sol from NASA BVAD).</dd>
+<dt>Why does the rover take 7.9 sols?</dt><dd>2,722 km on a route computed by A* over real Mars elevation, at 360 km per sol (20 km/h, 18 h/sol), plus 0.3 sols to load r-3's cargo.</dd>
+<dt>What happens during solar conjunction (Earth silent ~2 weeks)?</dt><dd>The light-delay model and the autonomy matrix handle it: messages to Earth queue, and the “blackout” column of the policy decides what agents may do alone.</dd>
+<dt>What's the business model?</dt><dd>SaaS per colony / per mission operator: forecasting + coordination + resupply planning seats for colony ops, mission control and suppliers (roles already in the product). Today's analogues: Antarctic stations, offshore platforms, remote mines and disaster logistics on Earth.</dd>
+<dt>What would you build next?</dt><dd>Real wind fields from Mars climate models in the ensemble, JPL DE ephemerides, multi-revolution Lambert, battery models for rovers, and integrations with real telemetry.</dd>
+<dt>Is the data stored securely?</dt><dd>Server-only API key, signed sessions, role checks on every API, audit log, signed messages. The world state lives in Redis (Upstash) in production.</dd>
+<dt>What did you build vs borrow?</dt><dd>All app code, the engine, agents, UI and 3D scenes are ours. Borrowed: open-source libraries (Next.js, React, three.js, Anthropic SDK) and public NASA/USGS imagery, credited in the README.</dd>
+</dl>
+
+<h2>10. Numbers to remember</h2>
+<table>
+<tr><td>Launch window period</td><td class="num">~26 months (780 days)</td><td>Trip</td><td class="num">6–9 months (193 d for 2052)</td></tr>
+<tr><td>Light delay (scenario)</td><td class="num">6 m 26 s (range 3–22 min)</td><td>Ensemble</td><td class="num">300 runs, seed 4412</td></tr>
+<tr><td>S-17 → Arcadia</td><td class="num">p 0.78, sol +8 to +14</td><td>Opportunity 2018</td><td class="num">645 → 22 Wh</td></tr>
+<tr><td>O₂ per person per sol</td><td class="num">0.84 kg (BVAD)</td><td>Water / food</td><td class="num">6.5 kg / 1.8 kg</td></tr>
+<tr><td>Rover</td><td class="num">20 km/h · 360 km/sol · 3 t</td><td>Order</td><td class="num">3 ships · 261 t · 2 approvals</td></tr>
+</table>
+
+<h2>11. Running and deploying</h2>
+<p><code>npm i</code> · <code>npm run dev</code> · <code>npm test</code>. Deploy with <code>vercel --prod</code>. Set <code>AUTH_SECRET</code>, <code>ANTHROPIC_API_KEY</code> (the Claude key goes only here), <code>AGENTS_MODE=llm</code>, and add Upstash Redis from the Vercel Marketplace for shared state. Details in <code>docs/DEPLOY.md</code>. Demo accounts: <code>ayari@jezero.base</code> (admin), <code>lina@utopia.base</code>, <code>control@earth.gov</code>, <code>supply@cargo.co</code>, <code>jury@lumen.org</code> — password <code>lifeline-demo</code>.</p>
+</body>
+</html>

@@ -1,0 +1,13 @@
+.mmap{position:relative;border-radius:12px;overflow:hidden;background:#2a1710;cursor:grab;touch-action:none;user-select:none}
+.mmap:active{cursor:grabbing}
+.mmap svg{display:block}
+.mmap :global(.grat) line{stroke:#fff;stroke-opacity:.13;stroke-width:1}
+.mmap :global(.glab){font:500 10px var(--mono);fill:#fff;fill-opacity:.62;paint-order:stroke;stroke:#2a1710;stroke-opacity:.35;stroke-width:2px}
+.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(20,8,4,.38) 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.scale{position:absolute;right:14px;bottom:12px;display:flex;align-items:center;gap:8px;pointer-events:none}
+.scale span{display:block;height:6px;border:1.5px solid rgba(255,255,255,.9);border-top:0}
+.scale b{font:500 11px var(--mono);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.ctl{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--sh-1)}
+.ctl button{width:30px;height:28px;border:0;background:transparent;font:500 15px var(--font);color:var(--ink-2);cursor:pointer}
+.ctl button+button{border-top:1px solid var(--line-2)}
+.ctl button:hover{background:var(--sunken)}
