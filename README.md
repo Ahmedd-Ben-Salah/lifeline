@@ -15,6 +15,10 @@ Agents that forecast danger on Mars and move air, water and food between colonie
 
 <p align="center"><i>IEEE Lumen 2.0 · Beyond 2030 challenge</i></p>
 
+<p align="center">
+  <img src="docs/screenshots/landing.png" alt="Lifeline landing page" width="100%">
+</p>
+
 ---
 
 ## The future we see
@@ -85,6 +89,46 @@ Scenario: **12 November 2050**, Mars season Ls 292° (peak dust season). Dust st
 5. **Traffic 3D**: real planet positions, the cargo fleet on its transfer trajectory, rovers and the storm on Mars.
 
 Ask the agents anything in Comms, for example *"What if the storm lasts 60 sols?"*. The answer is computed by the engine and shows which tools were used.
+
+## Screenshots
+
+### Space view: the real solar system in 3D
+
+Earth and Mars at their true positions for the scenario date, the cargo fleet on its Lambert transfer trajectory, Earth with real day/night and clouds, Mars with the four colonies. Time can run at 1 hour, 1 day or 10 days per second, and the view can jump to the launch or the arrival.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/space-system.png" alt="Solar system view with Earth and Mars orbits"><br><sub><b>Solar system</b>: true orbits, countdown to the next launch window</sub></td>
+    <td width="50%"><img src="docs/screenshots/space-mars.png" alt="Mars with the colonies"><br><sub><b>Mars</b>: Jezero, Arcadia, Utopia and Valles on NASA imagery</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/space-earth.png" alt="Earth with the cargo fleet"><br><sub><b>Earth</b>: the cargo fleet waiting for the window</sub></td>
+    <td width="50%"><img src="docs/screenshots/space-rockets.png" alt="Cargo rockets in flight"><br><sub><b>Rockets</b>: three 100 t landers carrying the Earth order</sub></td>
+  </tr>
+</table>
+
+### Mission control
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/overview.png" alt="Overview"><br><sub><b>Overview</b>: days of air left, the storm, cargo on the road, the next launch window, and what the agents are doing</sub></td>
+    <td width="50%"><img src="docs/screenshots/forecasts.png" alt="Storm forecast"><br><sub><b>Storm forecast</b>: the cone from 300 simulations, 78% chance to reach Arcadia in 8 to 14 days, and why</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/comms.png" alt="Agent comms"><br><sub><b>Comms</b>: signed agent messages, light-delayed Earth replies, and questions answered with engine tools</sub></td>
+    <td width="50%"><img src="docs/screenshots/logistics.png" alt="Rover logistics"><br><sub><b>Rovers</b>: A* routes on real Mars terrain, rover 3 broken down, rover 7 re-routed to recover its cargo</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/resupply.png" alt="Earth resupply"><br><sub><b>Earth order</b>: countdown to launch, transfer orbit, best launch dates chart, and the cargo packed into three rockets</sub></td>
+    <td width="50%"><img src="docs/screenshots/colony.png" alt="Colony detail"><br><sub><b>Colony</b>: Arcadia's air, water, food and power, with the 60-day forecast through the storm</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/automations.png" alt="Automations and agent builder"><br><sub><b>Automations</b>: how the storm response works, step by step, and an agent builder for custom rules</sub></td>
+    <td width="50%"><img src="docs/screenshots/policies.png" alt="Rules for the AI"><br><sub><b>Rules</b>: what the agents may do alone, what they report, and what needs a person's OK</sub></td>
+  </tr>
+</table>
+
+<p align="center"><img src="docs/screenshots/login.png" alt="Sign in" width="70%"><br><sub>Sign in with one of five roles: colony operator, Earth control, supplier, admin or viewer</sub></p>
 
 ## System design
 
