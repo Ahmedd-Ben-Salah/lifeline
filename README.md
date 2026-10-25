@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="docs/system-design/architecture.png" alt="Lifeline system architecture" width="100%">
-</p>
 
 <h1 align="center">Lifeline</h1>
 <p align="center"><b>The supply chain between worlds.</b><br>
